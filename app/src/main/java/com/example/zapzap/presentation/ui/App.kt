@@ -25,52 +25,53 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.zapzap.model.BottomNavItem
+import com.example.zapzap.model.ScreenItem
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 fun App() {
-    val itemsBottomBar = listOf(
-        BottomNavItem.Chats,
-        BottomNavItem.Updates,
-        BottomNavItem.Communities,
-        BottomNavItem.Calls,
+    val screens = listOf(
+        ScreenItem.Chats,
+        ScreenItem.Updates,
+        ScreenItem.Communities,
+        ScreenItem.Calls,
     )
 
-    var selectedItem by remember { mutableStateOf(itemsBottomBar.first()) }
-    val pagerState = rememberPagerState { itemsBottomBar.size }
+    var currentScreen by remember { mutableStateOf(screens.first()) }
+    val pagerState = rememberPagerState { screens.size }
 
-    LaunchedEffect(selectedItem) {
-        pagerState.animateScrollToPage(itemsBottomBar.indexOf(selectedItem))
+    LaunchedEffect(currentScreen) {
+        pagerState.animateScrollToPage(screens.indexOf(currentScreen))
     }
 
     LaunchedEffect(pagerState.targetPage) {
-        selectedItem = itemsBottomBar[pagerState.targetPage]
+        currentScreen = screens[pagerState.targetPage]
     }
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(title = {
-            Text(text = "ZapZap")
+            Text(text = currentScreen.topAppBarItem.title)
         }, actions = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.padding(8.dp)
             ) {
-                Icon(imageVector = Icons.Default.CameraAlt, contentDescription = null)
-                Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
+               currentScreen.topAppBarItem.icons.forEach { icon ->
+                   Icon(imageVector = icon, contentDescription = null)
+               }
             }
         })
     },
         bottomBar = {
             BottomAppBar {
-                itemsBottomBar.forEach { NavItem ->
+                screens.forEach { NavItem ->
                     NavigationBarItem(
-                        selected = selectedItem == NavItem,
-                        onClick = { selectedItem = NavItem },
+                        selected = currentScreen == NavItem,
+                        onClick = { currentScreen = NavItem },
                         icon = {
-                            Icon(imageVector = NavItem.icon, contentDescription = null)
+                            Icon(imageVector = NavItem.bottomAppBarItem.icons, contentDescription = null)
                         },
-                        label = { Text(NavItem.label) }
+                        label = { Text(NavItem.bottomAppBarItem.label) }
 
                     )
                 }
@@ -80,12 +81,12 @@ fun App() {
             state = pagerState,
             modifier = Modifier.padding(innerPadding)
         ) { page ->
-            val item = itemsBottomBar[page]
+            val item = screens[page]
             when (item) {
-                BottomNavItem.Calls -> CallScren()
-                BottomNavItem.Chats -> ChatsScreen()
-                BottomNavItem.Communities -> CommunitiesScreen()
-                BottomNavItem.Updates -> UpdatesScren()
+                ScreenItem.Calls -> CallScren()
+                ScreenItem.Chats -> ChatsScreen()
+                ScreenItem.Communities -> CommunitiesScreen()
+                ScreenItem.Updates -> UpdatesScren()
             }
         }
     }
